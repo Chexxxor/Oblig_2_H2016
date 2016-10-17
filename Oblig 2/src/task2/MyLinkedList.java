@@ -177,13 +177,7 @@ public class MyLinkedList<E> extends MyAbstractList<E> {
 
 	@Override /** Return true if this list contains the element e */
 	public boolean contains(E e) {
-		Node<E> current = head;
-		for(int i = 0; i < size-1; i++){
-			if(current.element.equals(e))
-				return true;
-			current = current.next;
-		}
-		return false;
+		return indexOf(e) != -1;
 	}
 
 	@Override /** Return the element at the specified index */
@@ -202,7 +196,7 @@ public class MyLinkedList<E> extends MyAbstractList<E> {
 		if(head.element.equals(e))
 			return 0;
 		Node<E> current = head;
-		for(int i = 1; i < size-1; i++){
+		for(int i = 1; i < size; i++){
 			current = current.next;
 			if(current.element.equals(e))
 				return i;
@@ -228,8 +222,18 @@ public class MyLinkedList<E> extends MyAbstractList<E> {
 	@Override /** Replace the element at the specified position 
 	 *  in this list with the specified element. */
 	public E set(int index, E e) {
-		System.out.println("Implementation left as an exercise");
-		return null;
+		if(index == 0)
+			head.element = e;
+		if(index == size-1)
+			tail.element = e;
+		checkIndex(index);
+		Node<E> current = head;
+		for(int i = 0; i < index; i++){
+			current = current.next;
+		}
+		E old = current.element;
+		current.element = e;
+		return old;
 	}
 
 	@Override /** Override iterator() defined in Iterable */

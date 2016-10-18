@@ -10,14 +10,14 @@ public class MergeSort {
 	
 			@SuppressWarnings("unchecked")
 			E[] secondHalf = (E[]) new Comparable[list.length - list.length/2];
-			System.arraycopy(list, list.length/2, firstHalf, 0, list.length-list.length/2);
+			System.arraycopy(list, list.length/2, secondHalf, 0, list.length-list.length/2);
 			mergeSort(secondHalf);
 			
 			merge(firstHalf, secondHalf, list);
 		}
 	}
 	
-	public static <E extends Comparable<E>> void merge(E[] first, E[] second, E[] result){
+	public static <E extends Comparable> void merge(E[] first, E[] second, E[] result){
 		int current1 = 0;
 		int current2 = 0;
 		int current3 = 0;

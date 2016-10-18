@@ -182,6 +182,8 @@ public class MyLinkedList<E> extends MyAbstractList<E> {
 
 	@Override /** Return the element at the specified index */
 	public E get(int index) {
+		if(index == size-1)
+			return tail.element;
 		checkIndex(index);
 		Node<E> current = head;
 		for(int i = 0; i < index; i++){
@@ -209,31 +211,41 @@ public class MyLinkedList<E> extends MyAbstractList<E> {
 	public int lastIndexOf(E e) {
 		if(tail.element.equals(e))
 			return size-1;
-		int last = -1;
+		int last = head.element.equals(e) ? 0 : -1;
 		Node<E> current = head;
-		for(int i = 0; i < size-1; i++){
+		for(int i = 1; i < size-1; i++){ //size-1 since there's no need to check last element twice
+			current = current.next;
 			if(current.element.equals(e))
 				last = i;
-			current = current.next;
 		}
 		return last;
 	}
 
 	@Override /** Replace the element at the specified position 
 	 *  in this list with the specified element. */
-	public E set(int index, E e) {
-		if(index == 0)
-			head.element = e;
-		if(index == size-1)
-			tail.element = e;
-		checkIndex(index);
-		Node<E> current = head;
-		for(int i = 0; i < index; i++){
-			current = current.next;
+	public E set(int index, E e){ //Interpreted the return value to be similar to the remove method's return value.
+		if(index == size){ //New element
+			addLast(e);
+			return e;
 		}
-		E old = current.element;
-		current.element = e;
-		return old;
+		else if(index == size-1){ //Last element
+			E old = tail.element; //Chose to put this declaration too places instead of making a needless declaration for the first if case. 
+			tail.element = e;
+			if(index == 0){ //If also first element
+				head.element = e;
+			}
+			return old;
+		}
+		else{
+			checkIndex(index);
+			Node<E> current = head;
+			for(int i = 1; i <= index; i++){
+				current = current.next;
+			}
+			E old = current.element;
+			current.element = e;
+			return old;
+		}
 	}
 
 	@Override /** Override iterator() defined in Iterable */

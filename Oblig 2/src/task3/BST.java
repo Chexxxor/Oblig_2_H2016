@@ -1,5 +1,12 @@
 package task3;
 
+import static org.junit.Assert.assertEquals;
+
+import java.util.ArrayList;
+
+import org.junit.Before;
+import org.junit.Test;
+
 public class BST<E extends Comparable<E>> extends AbstractTree<E> {
 	protected TreeNode<E> root;
 	protected int size = 0;
@@ -32,8 +39,9 @@ public class BST<E extends Comparable<E>> extends AbstractTree<E> {
 		return false;
 	}
 
-	@Override /** Insert element e into the binary search tree.
+	/** Insert element e into the binary search tree.
 	 * Return true if the element is inserted successfully. */
+	@Override
 	public boolean insert(E e) {
 		if (root == null)
 			root = createNewNode(e); // Create a new root
@@ -54,10 +62,14 @@ public class BST<E extends Comparable<E>> extends AbstractTree<E> {
 					return false; // Duplicate node not inserted
 
 			// Create the new node and attach it to the parent node
-			if (e.compareTo(parent.element) < 0)
+			if (e.compareTo(parent.element) < 0){
 				parent.left = createNewNode(e);
-			else
+				parent.left.parent = parent;
+			}
+			else {
 				parent.right = createNewNode(e);
+				parent.right.parent = parent;
+			}
 		}
 
 		size++;
@@ -113,6 +125,7 @@ any instance members defined in its outer class */
 		protected E element;
 		protected TreeNode<E> left;
 		protected TreeNode<E> right;
+		protected TreeNode<E> parent;
 
 		public TreeNode(E e) {
 			element = e;
@@ -127,6 +140,38 @@ any instance members defined in its outer class */
 	/** Returns the root of the tree */
 	public TreeNode<E> getRoot() {
 		return root;
+	}
+
+	private TreeNode<E> getNode(E e){
+		TreeNode<E> current = root;
+		while(current != null){
+			if (e.compareTo(current.element) < 0) {
+				current = current.left;
+			}
+			else if (e.compareTo(current.element) > 0) {
+				current = current.right;
+			}
+			else
+				break;
+		}
+		return current;
+	}
+
+	private boolean isLeaf(E e){
+		TreeNode<E> current = getNode(e);
+		if(current == null)
+			return false;
+		return current.left == current.right;
+	}
+
+	public ArrayList<E> getPath(E e){
+		ArrayList<E> path = new ArrayList<>();
+		TreeNode<E> current = getNode(e);
+		while(current != null){
+			path.add(current.element);
+			current = current.parent;
+		}
+		return path;
 	}
 
 	/** Returns a path from the root leading to the specified element */
@@ -159,11 +204,9 @@ any instance members defined in its outer class */
 		TreeNode<E> current = root;
 		while (current != null) {
 			if (e.compareTo(current.element) < 0) {
-				parent = current;
 				current = current.left;
 			}
 			else if (e.compareTo(current.element) > 0) {
-				parent = current;
 				current = current.right;
 			}
 			else
@@ -172,18 +215,34 @@ any instance members defined in its outer class */
 
 		if (current == null)
 			return false; // Element is not in the tree
+		parent = current.parent;
 
+		/*// Case 0: current is a leaf
+		if(current.left == current.right){
+			if (e.compareTo(parent.element) < 0)
+				parent.left = null;
+			else
+				parent.right = null;
+		}*/
 		// Case 1: current has no left child
 		if (current.left == null) {
 			// Connect the parent with the right child of the current node
 			if (parent == null) {
 				root = current.right;
+				if(root != null)
+					root.parent = null;
 			}
 			else {
-				if (e.compareTo(parent.element) < 0)
+				if (e.compareTo(parent.element) < 0){
 					parent.left = current.right;
-				else
+					if(parent.left != null)
+						parent.left.parent = parent;
+				}
+				else{
 					parent.right = current.right;
+					if(parent.right != null)
+						parent.right.parent = parent;
+				}
 			}
 		}
 		else {
@@ -204,9 +263,12 @@ any instance members defined in its outer class */
 			// Eliminate rightmost node
 			if (parentOfRightMost.right == rightMost)
 				parentOfRightMost.right = rightMost.left;
-			else
+			else{
 				// Special case: parentOfRightMost == current
 				parentOfRightMost.left = rightMost.left;
+				if(parentOfRightMost.left != null)
+					parentOfRightMost.left.parent = parent;
+			}
 		}
 
 		size--;
@@ -235,38 +297,70 @@ any instance members defined in its outer class */
 		}
 
 
-			/** Inorder traversal from a subtree */
-			private void inorder(TreeNode<E> root) {
-				if (root == null) return;
-				inorder(root.left);
-				list.add(root.element);
-				inorder(root.right);
-			}
-
-			@Override /** More elements for traversing? */
-			public boolean hasNext() {
-				if (current < list.size())
-					return true;
-
-				return false;
-			}
-
-			@Override /** Get the current element and move to the next */
-			public E next() {
-				return list.get(current++);
-			}
-
-			@Override /** Remove the current element */
-			public void remove() {
-				delete(list.get(current)); // Delete the current element
-				list.clear(); // Clear the list
-				inorder(); // Rebuild the list
-			}
+		/** Inorder traversal from a subtree */
+		private void inorder(TreeNode<E> root) {
+			if (root == null) return;
+			inorder(root.left);
+			list.add(root.element);
+			inorder(root.right);
 		}
 
-		/** Remove all elements from the tree */
-		public void clear() {
-			root = null;
-			size = 0;
+		@Override /** More elements for traversing? */
+		public boolean hasNext() {
+			if (current < list.size())
+				return true;
+
+			return false;
+		}
+
+		@Override /** Get the current element and move to the next */
+		public E next() {
+			return list.get(current++);
+		}
+
+		@Override /** Remove the current element */
+		public void remove() {
+			delete(list.get(current)); // Delete the current element
+			list.clear(); // Clear the list
+			inorder(); // Rebuild the list
 		}
 	}
+
+	/** Remove all elements from the tree */
+	public void clear() {
+		root = null;
+		size = 0;
+	}
+
+	public static class TestClass{
+		private static final String[] elements = {"Man", "Fin", "Queue", "Ape", "Gorilla", "Post", "Wales"};
+		private BST<String> tree;
+
+		@Before
+		public void setup(){
+			tree = new BST<>(elements);
+		}
+		@Test
+		public void testIsLeaf(){
+			assertEquals(false, tree.isLeaf("Barn")); //Element doesn't exist
+			assertEquals(true, tree.isLeaf("Wales"));
+			assertEquals(false, tree.isLeaf("Fin"));
+			assertEquals(false, tree.isLeaf("Man"));
+		}
+		
+		@Test
+		public void getNodeTest() {
+			assertEquals("Post", tree.getNode("Post").element);
+			assertEquals("Man", tree.getNode("Man").element);
+			assertEquals(null, tree.getNode("Fish"));
+		}
+		
+		@Test
+		public void nodeParentTest(){
+			assertEquals("Man", tree.getNode("Fin").parent.element);
+			assertEquals("Man", tree.getNode("Queue").parent.element);
+			assertEquals("Fin", tree.getNode("Ape").parent.element);
+			assertEquals(null, tree.getNode("Man").parent);
+		}
+	}
+}

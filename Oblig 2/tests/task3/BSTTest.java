@@ -45,4 +45,16 @@ public class BSTTest {
 		expected = new ArrayList<>(Arrays.asList("Wales", "Queue", "Gorilla"));
 		assertEquals(expected, tree.getPath("Wales"));
 	}
+	
+	@Test
+	public void preorderIteratorTest(){
+		java.util.Iterator<String> treeIt = tree.preorderIterator();
+		ArrayList<String> expected = new ArrayList<>(Arrays.asList("Man", "Fin", "Ape", "Gorilla", "Queue", "Post", "Wales"));
+		java.util.Iterator<String> expIt = expected.iterator();
+		while(treeIt.hasNext()){
+			assertTrue(expIt.hasNext());
+			assertEquals(treeIt.next(), expIt.next());
+		}
+		assertFalse(expIt.hasNext());
+	}
 }
